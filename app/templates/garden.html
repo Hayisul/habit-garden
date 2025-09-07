@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Garden</h1>
+<p>Currency: <strong id="summary-currency">0</strong></p>
+<div id="garden-grid" aria-label="Garden grid"></div>
+
+<script src="{{ url_for('static', filename='js/garden.js') }}"></script>
+{% endblock %}

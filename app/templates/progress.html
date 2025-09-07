@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Progress</h1>
+
+<section aria-label="Summary">
+    <div>Current streak: <strong id="summary-current-streak">0</strong></div>
+    <div>Longest streak: <strong id="summary-longest-streak">0</strong></div>
+    <div>Total completions: <strong id="summary-total-completions">0</strong></div>
+    <div>Currency: <strong id="summary-currency">0</strong></div>
+</section>
+
+<section aria-label="Recent activity">
+    <div id="table-activity"></div>
+</section>
+{% endblock %}

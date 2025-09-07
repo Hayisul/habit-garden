@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Habits</h1>
+
+<form id="form-add-habit">
+    <label for="input-habit-name">New habit</label>
+    <input id="input-habit-name" name="name" type="text" placeholder="e.g., Drink water">
+    <button id="btn-add-habit" type="submit">Add</button>
+</form>
+
+<section aria-label="Quick stats">
+    <span id="stat-total-habits">0</span> habits ·
+    <span id="stat-total-completions">0</span> completions ·
+    streak <span id="stat-current-streak">0</span> ·
+    currrency <span id="stat-currency">0</span>
+</section>
+
+<ul id="list-habits" aria-label="Habit list"></ul>
+
+<script src="{{ url_for('static', filename='js/habits.js') }}"></script>
+{% endblock %}
