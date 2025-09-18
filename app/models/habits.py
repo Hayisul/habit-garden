@@ -10,7 +10,7 @@ from sqlite3 import IntegrityError
 
 def list_active_habits():
     """Return all non-archived habits (newest first)."""
-    db = get_db
+    db = get_db()
     rows = db.execute(
         """
         SELECT id, name, created_at, archived_at
@@ -50,7 +50,7 @@ def update_habit(habit_id: int, name: str | None = None, archived: bool | None =
         db.execute("UPDATE habits SET archived_at=NULL WHERE id=?;", (habit_id,))
 
     row = db.execute(
-        "SELECT id, name, created:at, archived_at FROM habits WHERE id=?;", (habit_id,)
+        "SELECT id, name, created_at, archived_at FROM habits WHERE id=?;", (habit_id,)
     ).fetchone()
     if not row:
         raise LookupError("not_found")
@@ -80,7 +80,7 @@ def complete_today(habit_id: int, date_str: str | None = None):
 
 
 def uncomplete_today(habit_id: int, date_str: str | None = None):
-    """Remove completion for the given date (defautl: today)."""
+    """Remove completion for the given date (default: today)."""
     db = get_db()
     date_str = date_str or _today_str()
     cur = db.execute(
@@ -91,13 +91,13 @@ def uncomplete_today(habit_id: int, date_str: str | None = None):
 
 
 def completions_in_range(habit_id: int, start_date: str, end_date: str):
-    """Showcasse progress. List completion between two dates (e.g., last 30 days)."""
+    """Showcase progress. List completions between two dates (e.g., last 30 days)."""
     db = get_db()
     rows = db.execute(
         """
         SELECT date
         FROM completions
-        WHERE habit_id=? AND date between ? AND ?
+        WHERE habit_id=? AND date BETWEEN ? AND ?
         ORDER BY date ASC;
         """,
         (habit_id, start_date, end_date),
@@ -109,7 +109,7 @@ def completions_in_range(habit_id: int, start_date: str, end_date: str):
 
 
 def fetch_all_completions():
-    """Return all completions in dictionnary of ID and date."""
+    """Return all completions as a list of dicts: {'habit_id', 'date'}."""
     db = get_db()
     rows = db.execute(
         "SELECT habit_id, date FROM completions ORDER BY date ASC;"
@@ -123,5 +123,7 @@ def counts():
     total_habits = db.execute(
         "SELECT COUNT(*) AS c FROM habits WHERE archived_at IS NULL;"
     ).fetchone()["c"]
-    total_completions = db.execute("SELECT COUNT(*) AS c FROM")
+    total_completions = db.execute("SELECT COUNT(*) AS c FROM completions").fetchone()[
+        "c"
+    ]
     return {"total_habits": total_habits, "total_completions": total_completions}

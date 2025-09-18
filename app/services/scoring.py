@@ -11,10 +11,10 @@ from typing import Dict, Set, List
 
 def _index_comps_by_date(
     all_completions: List[dict],
-) -> dict[str, set[int]]:
+) -> Dict[str, Set[int]]:
     """
     Turn a list like [{'habit_id': 1, 'date': 'YYYY-MM-DD'}, ...]
-    into a like 'YYYY-MM-DD' -> {habit_id, ...}
+    into a dict like 'YYYY-MM-DD' -> {habit_id, ...}
     """
     by_date: Dict[str, Set[int]] = defaultdict(set)
     for row in all_completions:
@@ -34,7 +34,7 @@ def current_streak(
     due_by_date: Dict[str, Set[int]],
 ) -> int:
     """
-    Count the *current* streak up to today, wakling backward.
+    Count the *current* streak up to today, walking backward.
     Return the consecutive *due* days where all due habits were completed.
     """
     if not due_by_date:
@@ -115,6 +115,7 @@ def summarize_stats(
     return {
         "total_habits": total_active_habits,
         "total_completions": total_completions,
-        "current_sttreak": long,
+        "current_streak": cur,
+        "longest_streak": long,
         "currency": coins,
     }

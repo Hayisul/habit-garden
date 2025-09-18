@@ -1,7 +1,6 @@
-# SQLiten helpers
+# SQLite helpers
 
 import sqlite3
-from pathlib import Path
 from flask import current_app, g
 
 
@@ -19,8 +18,8 @@ def get_db():
         )
         g.db.row_factory = sqlite3.Row  # rows behave like dicts instead of tuples
 
-        # Ensure forwign keys work (off by default in SQLite).
-        g.db.execute("PRAGMA foreing_keys = ON;")
+        # Ensure foreign keys work (off by default in SQLite).
+        g.db.execute("PRAGMA foreign_keys = ON;")
 
     return g.db
 
@@ -44,16 +43,16 @@ def create_tables():
     db = get_db()
     db.executescript(
         """
-        CREATE TABLE IF NOT EXIST habits (
+        CREATE TABLE IF NOT EXISTS habits (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             name        TEXT NOT NULL,
-            created_at  TEXT NOT NULL,
-            archived_at TEXT
-            difficulty  TEXT NOT NUL DEFAULT 'medium'
+            created_at  TEXT NOT NULL DEFAULT (DATE('now')),
+            archived_at TEXT,
+            difficulty  TEXT NOT NULL DEFAULT 'medium'
                         CHECK (difficulty IN ('easy','medium','hard'))
         );
 
-        CREATE TABLE IF NOT EXIST completions (
+        CREATE TABLE IF NOT EXISTS completions (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             habit_id    INTEGER NOT NULL,
             date        TEXT NOT NULL, -- YYYY-MM-DD
@@ -68,7 +67,7 @@ def create_tables():
         );
 
         CREATE TABLE IF NOT EXISTS purchases (
-            id                  INTEGER PRIMARY KEY AUTOINCREMENT
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
             item_id             INTEGER NOT NULL,
             cost_at_purchase    INTEGER NOT NULL CHECK (cost_at_purchase >= 0),
             purchased_at        TEXT NOT NULL DEFAULT (DATETIME('now')),
@@ -95,8 +94,8 @@ def seed_sample_data():
         ("Walk 20 minutes", "medium"),
         ("Read 10 pages", "medium"),
     ]
-    for name in starter:
-        db.execute("INSERT INTO habits(name,) VALUES (?);", (name,))
+    for name, diff in starter:
+        db.execute("INSERT INTO habits(name, difficulty) VALUES (?, ?);", (name, diff))
 
     # Seed items (temporary)
     icount = db.execute("SELECT COUNT(*) AS c FROM items;").fetchone()["c"]
@@ -129,7 +128,7 @@ def earned_coins():
                 END
             ), 0) AS coins
         FROM completions
-        JOIN habits ON habits.id = completions.habits_id;
+        JOIN habits ON habits.id = completions.habit_id;
         """
     ).fetchone()
     return int(row["coins"])
@@ -138,7 +137,7 @@ def earned_coins():
 def spent_coins():
     db = get_db()
     row = db.execute(
-        "SELECT COALESCE(SUM(cost_at_purchase), 0) AS coins FROM puchases;"
+        "SELECT COALESCE(SUM(cost_at_purchase), 0) AS coins FROM purchases;"
     ).fetchone()
     return int(row["coins"])
 

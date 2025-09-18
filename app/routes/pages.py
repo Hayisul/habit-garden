@@ -11,7 +11,7 @@ bp = Blueprint("pages", __name__)
 def home():
     """
     Home page.
-    Shows the habit list, add form, and mini stats.
+    Show the habit list, add form, and mini stats.
     """
 
     # The template will set <body data-page="home"> so JS knows what to init.

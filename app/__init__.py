@@ -9,12 +9,12 @@ from pathlib import Path
 
 def create_app():
     """
-    Called by app.py to get a coonfigured Flask application.
+    Factory function that creates and configures the Flask application.
     """
 
     app = Flask(
         __name__,
-        instance_relative_config=True,  # keeps writable files in an instance outside version control
+        instance_relative_config=True,  # keeps writable files in an instance folder outside version control
         template_folder="templates",  # where HTML templates live
         static_folder="static",  # where CSS/JS/images live
     )
