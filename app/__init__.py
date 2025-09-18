@@ -6,20 +6,21 @@
 from flask import Flask
 from pathlib import Path
 
+
 def create_app():
     """
     Called by app.py to get a coonfigured Flask application.
     """
-    
+
     app = Flask(
         __name__,
         instance_relative_config=True,  # keeps writable files in an instance outside version control
-        template_folder="templates",    # where HTML templates live
-        static_folder="static",         # where CSS/JS/images live
+        template_folder="templates",  # where HTML templates live
+        static_folder="static",  # where CSS/JS/images live
     )
 
     # Basic, safe defaults for local development
-    app.config.from_mapping (
+    app.config.from_mapping(
         SECRET_KEY="dev",
         DATABASE=str(Path(app.instance_path) / "habit_garden.sqlite3"),
     )
@@ -29,11 +30,19 @@ def create_app():
 
     # Register page routes
     from .routes.pages import bp as pages_bp
+
     app.register_blueprint(pages_bp)
 
     # Health-check
     @app.get("/health")
     def health():
         return {"status": "ok"}, 200
-    
+
+    from .models import db as db_module
+
+    app.teardown_appcontext(db_module.close_db)
+    with app.app_context():
+        db_module.create_tables()
+        db_module.seed_sample_data()
+
     return app
