@@ -28,19 +28,26 @@ def create_app():
     # Ensure the instance exists so SQLite can create its file there
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 
-    # Register page routes
+    # pages (HTML templates)
     from .routes.pages import bp as pages_bp
 
     app.register_blueprint(pages_bp)
+
+    # API (JSON endpoints like /api/stats)
+    from .routes.api import bp as api_bp
+
+    app.register_blueprint(api_bp)
 
     # Health-check
     @app.get("/health")
     def health():
         return {"status": "ok"}, 200
 
+    # Database lifecycle
     from .models import db as db_module
 
     app.teardown_appcontext(db_module.close_db)
+
     with app.app_context():
         db_module.create_tables()
         db_module.seed_sample_data()

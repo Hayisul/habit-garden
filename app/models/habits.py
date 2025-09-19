@@ -29,6 +29,7 @@ def create_habit(name: str):
         raise ValueError("invalid_name")
     db = get_db()
     cur = db.execute("INSERT INTO habits(name) VALUES (?);", (name,))
+
     habit_id = cur.lastrowid
     row = db.execute(
         "SELECT id, name, created_at, archived_at FROM habits WHERE id=?", (habit_id,)
@@ -127,3 +128,31 @@ def counts():
         "c"
     ]
     return {"total_habits": total_habits, "total_completions": total_completions}
+
+
+# ---------- Scheduling ----------
+
+
+def habits_due_on(day: str | None = None):
+    """Return the set of habits IDs due on a given date (default: today)."""
+    db = get_db()
+    d = _date.fromisoformat(day) if day else _date.today()
+    weekday = d.weekday()
+    rows = db.execute(
+        """
+        SELECT id, frequency, weekly_mask
+        FROM habits
+        WHERE archived_at IS NULL;
+        """
+    ).fetchall()
+
+    due = set()
+    for row in rows:
+        if row["frequency"] == "daily":
+            due.add(row["id"])
+        elif row["frequency"] == "custom":
+            mask = row["weekly_mask"] or "0000000"
+            if len(mask) == 7 and mask[weekday] == "1":
+                due.add(row["id"])
+
+    return due

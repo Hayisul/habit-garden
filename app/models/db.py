@@ -44,12 +44,16 @@ def create_tables():
     db.executescript(
         """
         CREATE TABLE IF NOT EXISTS habits (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            name        TEXT NOT NULL,
-            created_at  TEXT NOT NULL DEFAULT (DATE('now')),
-            archived_at TEXT,
-            difficulty  TEXT NOT NULL DEFAULT 'medium'
-                        CHECK (difficulty IN ('easy','medium','hard'))
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            name            TEXT NOT NULL,
+            created_at      TEXT NOT NULL DEFAULT (DATE('now')),
+            archived_at     TEXT,
+            difficulty      TEXT NOT NULL DEFAULT 'medium'
+                            CHECK (difficulty IN ('easy','medium','hard')),
+            frequency       TEXT NOT NULL DEFAULT 'daily'
+                            CHECK (frequency IN ('daily','custom')),
+            weekly_mask     CHAR(7) NOT NULL DEFAULT '1111111',
+            start_date      TEXT DEFAULT (DATE('now'))
         );
 
         CREATE TABLE IF NOT EXISTS completions (
@@ -90,12 +94,15 @@ def seed_sample_data():
         return
 
     starter = [
-        ("Drink water", "easy"),
-        ("Walk 20 minutes", "medium"),
-        ("Read 10 pages", "medium"),
+        ("Drink water", "easy", "daily", "1111111"),
+        ("Walk 20 minutes", "medium", "custom", "1111100"),
+        ("Read 10 pages", "medium", "custom", "0000011"),
     ]
-    for name, diff in starter:
-        db.execute("INSERT INTO habits(name, difficulty) VALUES (?, ?);", (name, diff))
+    for name, diff, freq, mask in starter:
+        db.execute(
+            "INSERT INTO habits(name, difficulty, frequency, weekly_mask) VALUES (?, ?, ?, ?);",
+            (name, diff, freq, mask),
+        )
 
     # Seed items (temporary)
     icount = db.execute("SELECT COUNT(*) AS c FROM items;").fetchone()["c"]
